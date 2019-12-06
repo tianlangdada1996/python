@@ -21,6 +21,7 @@
                 <span style="color: red;margin-left: 0">{{ obj.errors.0 }}</span>
             </div>
         {% endfor %}
+        <span style="color: red;margin-left: 0">{{ error }}</span>
         <button id="submit" type="submit">登 陆</button>
     </form>
     <a href="{% url 'app01:register' %}">

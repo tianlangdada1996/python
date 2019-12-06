@@ -3,7 +3,7 @@ from django.views import View
 
 from . import models
 from . import crmforms
-from crmtools import encryption
+from utils import encryption
 
 
 # Create your views here.
@@ -16,7 +16,13 @@ class Login(View):
     def post(self, request):
         login = crmforms.Login(data=request.POST)
         if login.is_valid():
-            return HttpResponse("OK")
+            user = login.cleaned_data["username"]
+            pwd = login.cleaned_data["password"]
+            ret = models.UserInfo.objects.filter(username=user,password=encryption.encryption(user,pwd))
+            if ret:
+                return HttpResponse("OK")
+            else:
+                return render(request,"identity/login.html",{"error":"用户名密码错误！"})
         else:
             return render(request, "identity/login.html", {"forms_obj": login})
 
