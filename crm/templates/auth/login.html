@@ -1,0 +1,37 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+    <title>登陆</title>
+    <link rel="stylesheet" href="{% static 'auth/css/style.css' %}">
+</head>
+<body>
+<div class="login-container">
+    <h1>CRM登录页面</h1>
+    <div class="connect">
+        <p>欢迎来到CRM系统</p>
+    </div>
+    <form action="{% url 'app01:login' %}" method="post" novalidate>
+        {% csrf_token %}
+        {% for obj in forms_obj %}
+            <div>
+                {{ obj }}
+                <span style="color: red;margin-left: 0">{{ obj.errors.0 }}</span>
+            </div>
+        {% endfor %}
+        <span style="color: red;margin-left: 0">{{ error }}</span>
+        <button id="submit" type="submit">登 陆</button>
+    </form>
+    <a href="{% url 'app01:register' %}">
+        <button type="button" class="register-tis">还有没有账号？</button>
+    </a>
+</div>
+<script src="{% static 'auth/js/jquery.min.js' %}"></script>
+<script src="{% static 'auth/js/common.js' %}"></script>
+<script src="{% static 'auth/js/supersized.3.2.7.min.js' %}"></script>
+<script src="{% static 'auth/js/supersized-init.js' %}"></script>
+<script src="{% static 'auth/js/jquery.validate.min.js' %}"></script>
+</body>
+</html>

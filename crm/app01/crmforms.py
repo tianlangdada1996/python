@@ -4,7 +4,7 @@ from django.core.validators import RegexValidator
 from . import models
 
 
-class Register(forms.Form):
+class RegisterForm(forms.Form):
     username = forms.CharField(
         # label="用户名",
         min_length=2,
@@ -71,7 +71,7 @@ class Register(forms.Form):
             self.add_error("confirm_password", "输入密码两次不一致！")
 
 
-class Login(forms.Form):
+class LoginForm(forms.Form):
     username = forms.CharField(
         label="用户名",
         widget=forms.TextInput(attrs={'placeholder': '请输入用户名'}),
@@ -86,3 +86,35 @@ class Login(forms.Form):
         super().__init__(*args, **kwargs)
         for field in self.fields.values():
             field.error_messages.update({"required": "用户名不能为空！"})
+
+
+class CustomerForm(forms.ModelForm):
+    class Meta:
+        model = models.Customer
+        fields = "__all__"
+        exclude = ["delete_status", ]
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == "course":
+                continue
+            field.widget.attrs.update({"class": "form-control"})
+
+
+class ConsultRecordForm(forms.ModelForm):
+    class Meta:
+        model = models.ConsultRecord
+        fields = "__all__"
+        exclude = ["delete_status", ]
+
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == "customer":
+                field.queryset = models.Customer.objects.filter(consultant__username=request.session.get("username"),
+                                                                delete_status=False)
+            elif name == "consultant":
+                obj = models.UserInfo.objects.get(username=request.session.get("username"))
+                field.choices = [(obj.id, obj.username)]
+            field.widget.attrs.update({"class": "form-control"})
