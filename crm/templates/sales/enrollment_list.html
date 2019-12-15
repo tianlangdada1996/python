@@ -1,0 +1,104 @@
+{% extends "page_template.html" %}
+
+{% load mytags %}
+
+{% block title %}
+    报名信息
+{% endblock %}
+
+{% block content %}
+
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading"></div>
+        <div class="panel-body">
+            <a href="{% resolve_url request 'app01:enrollment_add' %}" class="float-left">
+                <button class="btn btn-primary">添加报名信息</button>
+            </a>
+            <form>
+                <div class="input-group mb-3 col-md-4 float-right">
+                    <div class="input-group-prepend">
+                        <select class="custom-select" id="inputGroupSelect01" name="action">
+                            <option value='' selected>关键字</option>
+                            <option value="audit_status__contains">审批状态</option>
+                            <option value="school__name__contains">校区</option>
+                            <option value="enrolment_class__course__contains">所报班级</option>
+                        </select>
+                    </div>
+                    <input type="text" class="form-control" aria-label="Text input with dropdown button"
+                           placeholder="请输入搜索内容" name="cd">
+                    <div class="input-group-prepend">
+                        <button class="btn btn-outline-secondary" type="submit" id="button-addon1">搜索</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {#        <form method="post">#}
+        {#            {% csrf_token %}#}
+        {#            <div class="input-group mb-3 col-md-4 float-left">#}
+        {#                <div class="input-group-prepend">#}
+        {#                    <select class="custom-select" id="inputGroupSelect01" name="bluk_action">#}
+        {#                        <option value="bluk_delete">批量删除</option>#}
+        {#                    </select>#}
+        {#                </div>#}
+        {#                <div class="input-group-prepend">#}
+        {#                    <button class="btn btn-outline-secondary" type="submit" id="button-addon1">批量操作</button>#}
+        {#                </div>#}
+        {#            </div>#}
+
+        <!-- Table -->
+        <table style="margin-top: 10px" class="table table-striped table-hover">
+            <thead class="thead-dark">
+            <tr style="text-align: center; vertical-align: middle;">
+                <th>
+                    全选 <input type="checkbox" id="checkall">
+                </th>
+                <th>序号</th>
+                <th>为什么报名</th>
+                <th>审批通过</th>
+                <th>客户名称</th>
+                <th>校区</th>
+                <th>所报班级</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for enrollment in enrollments %}
+                <tr style="text-align: center; vertical-align: middle;">
+                    <td>
+                        <input type="checkbox" name="cids" value="{{ enrollment.id }}">
+                    </td>
+                    <td>{% list_number request forloop.counter obj %}</td>
+                    <td>{{ enrollment.why_us }}</td>
+                    <td>{{ enrollment.get_contract_approved_display }}</td>
+                    <td>{{ enrollment.customer.name }}</td>
+                    <td>{{ enrollment.school.name }}</td>
+                    <td>{{ enrollment.enrolment_class }}</td>
+                    <td>
+                        <a href="{% resolve_url request 'app01:enrollment_edit' enrollment.id %}" title="编辑"><i
+                                class="fa fa-pencil"></i>&nbsp;</a>|
+                        <a href="{% resolve_url request 'app01:enrollment_del' enrollment.id enrollments|length %}"
+                           title="删除"><i class="fa fa-remove"></i></a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {#        </form>#}
+    </div>
+    {{ page_html }}
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('#checkall').click(function () {
+            if ($(this).prop("checked")) {
+                $('[name="cids"]').prop("checked", true)
+            } else {
+                $('[name="cids"]').prop("checked", false)
+            }
+        })
+    </script>
+{% endblock %}

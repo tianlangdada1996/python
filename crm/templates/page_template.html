@@ -204,7 +204,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'app01:customer' %}" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
+                            <i class="nav-icon fas fa-address-book" aria-hidden="true"></i>
                             <p>
                                 公户管理
                                 <span class="right badge badge-danger">New</span>
@@ -213,7 +213,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'app01:mycustomer' %}" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
+                            <i class="nav-icon fas fa-user" aria-hidden="true"></i>
                             <p>
                                 我的客户
                             </p>
@@ -221,17 +221,25 @@ scratch. This page gets rid of all links and provides the needed markup only.
                     </li>
                     <li class="nav-item">
                         <a href="{% url 'app01:follow_records' %}" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
+                            <i class="nav-icon fas fa-hand-lizard-o" aria-hidden="true"></i>
                             <p>
                                 跟进记录
                             </p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="" class="nav-link">
-                            <i class="nav-icon fas fa-th"></i>
+                        <a href="{% url 'app01:enrollment' %}" class="nav-link">
+                            <i class="nav-icon fas fa-address-card" aria-hidden="true"></i>
                             <p>
                                 报名信息
+                            </p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="{% url 'app01:course_records' %}" class="nav-link">
+                            <i class="nav-icon fas fa-file-text" aria-hidden="true"></i>
+                            <p>
+                                课程记录
                             </p>
                         </a>
                     </li>

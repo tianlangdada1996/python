@@ -118,3 +118,45 @@ class ConsultRecordForm(forms.ModelForm):
                 obj = models.UserInfo.objects.get(username=request.session.get("username"))
                 field.choices = [(obj.id, obj.username)]
             field.widget.attrs.update({"class": "form-control"})
+
+
+class CourseRecordForm(forms.ModelForm):
+    class Meta:
+        model = models.CourseRecord
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for name, field in self.fields.items():
+            if name == "has_homework":
+                continue
+            field.widget.attrs.update({"class": "form-control"})
+
+
+class EnrollmentForm(forms.ModelForm):
+
+    class Meta:
+        model = models.Enrollment
+        fields = "__all__"
+        exclude = ['delete_status']
+
+    def __init__(self,request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for name, field in self.fields.items():
+            if name == "customer":
+                field.queryset = models.Customer.objects.filter(consultant__username=request.session.get("username"),
+                                                                delete_status=False)
+            field.widget.attrs.update({"class": "form-control"})
+
+
+class StudyRecordForm(forms.ModelForm):
+    class Meta:
+        model = models.StudyRecord
+        fields = "__all__"
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        for field in self.fields.values():
+            field.widget.attrs.update({"class": "form-control"})

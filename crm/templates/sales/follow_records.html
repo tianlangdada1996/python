@@ -48,7 +48,7 @@
             <tbody>
             {% for record in records %}
                 <tr style="text-align: center; vertical-align: middle;">
-                    <td>{{ forloop.counter }}</td>
+                    <td>{% list_number request forloop.counter obj %}</td>
                     <td>{{ record.customer.name }}</td>
                     <td>{{ record.note }}</td>
                     <td>{{ record.get_status_display }}</td>
@@ -64,9 +64,5 @@
         </table>
     </div>
     {{ page_html }}
-
-
-
-
 
 {% endblock %}

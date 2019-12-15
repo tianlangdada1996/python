@@ -1,0 +1,134 @@
+{% extends "page_template.html" %}
+
+{% load mytags %}
+
+{% block title %}
+    课程记录
+{% endblock %}
+
+{% block content %}
+
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading"></div>
+        <div class="panel-body">
+            <a href="{% resolve_url request 'app01:course_records_add' %}" class="float-left">
+                <button class="btn btn-primary">添加课程信息</button>
+            </a>
+            {#            <form>#}
+            {#                <div class="input-group mb-3 col-md-4 float-right">#}
+            {#                    <div class="input-group-prepend">#}
+            {#                        <select class="custom-select" id="inputGroupSelect01" name="action">#}
+            {#                            <option value='' selected>关键字</option>#}
+            {#                            <option value="qq__contains">QQ</option>#}
+            {#                            <option value="name__contains">姓名</option>#}
+            {#                        </select>#}
+            {#                    </div>#}
+            {#                    <input type="text" class="form-control" aria-label="Text input with dropdown button"#}
+            {#                           placeholder="请输入搜索内容" name="cd">#}
+            {#                    <div class="input-group-prepend">#}
+            {#                        <button class="btn btn-outline-secondary" type="submit" id="button-addon1">搜索</button>#}
+            {#                    </div>#}
+            {#                </div>#}
+            {#            </form>#}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="input-group mb-3 col-md-4 float-left">
+                <div class="input-group-prepend">
+                    <select class="custom-select" id="inputGroupSelect01" name="bluk_action">
+                        <option value="bluk_create_records">批量添加学习记录</option>
+                    </select>
+                </div>
+                <div class="input-group-prepend">
+                    <button class="btn btn-outline-secondary go" type="button" id="button-addon1">批量操作</button>
+                </div>
+            </div>
+
+            <!-- Table -->
+            <table style="margin-top: 10px" class="table table-striped table-hover">
+                <thead class="thead-dark">
+                <tr style="text-align: center; vertical-align: middle;">
+                    <th>
+                        全选 <input type="checkbox" id="checkall">
+                    </th>
+                    <th>序号</th>
+                    <th>节次</th>
+                    <th>上课日期</th>
+                    <th>本节课程标题</th>
+                    <th>本节课程内容</th>
+                    <th>班级</th>
+                    <th>讲师</th>
+                    <th>学习记录</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for record in course_records %}
+                    <tr style="text-align: center; vertical-align: middle;">
+                        <td>
+                            <input type="checkbox" name="cids" value="{{ record.id }}">
+                        </td>
+                        <td>{% list_number request forloop.counter obj %}</td>
+                        <td>{{ record.day_num }}</td>
+                        <td>{{ record.date|date:"Y-m-d" }}</td>
+                        <td>{{ record.course_title }}</td>
+                        <td>{{ record.course_memo }}</td>
+                        <td>{{ record.re_class }}</td>
+                        <td>{{ record.teacher.username }}</td>
+                        <td>
+                            <a href="{% url 'app01:study_records' record.id %}">查看学习记录</a>
+                        </td>
+                        <td>
+                            <a href="{% resolve_url request 'app01:course_records_edit' record.id %}" title="编辑"><i
+                                    class="fa fa-pencil"></i>&nbsp;</a>|
+                            <a href="{% resolve_url request 'app01:course_records_del' record.id course_records|length %}"
+                               title="删除"><i class="fa fa-remove"></i></a>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </form>
+    </div>
+    {{ page_html }}
+
+{% endblock %}
+
+{% block script %}
+    <script>
+        $('#checkall').click(function () {
+            if ($(this).prop("checked")) {
+                $('[name="cids"]').prop("checked", true)
+            } else {
+                $('[name="cids"]').prop("checked", false)
+            }
+        });
+
+        $('.go').click(function () {
+            var bluk_action = $('[name="bluk_action"]').val();
+            var cids = $('[type="checkbox"]:checked');
+            var cid_list = [];
+            for (var i = 0; i < cids.length; i++) {
+                var cid = cids.eq(i).val();
+                cid_list.push(cid)
+            }
+            {#console.log(cid_list);#}
+            $.ajax({
+                    url: '',
+                    type: 'post',
+                    data: {bluk_action: bluk_action, cid_list: JSON.stringify(cid_list), csrfmiddlewaretoken: '{{ csrf_token }}'},
+                    success: function (res) {
+                        console.log(res);
+                        if(res === "1"){
+                            alert("添加成功！")
+                        }else{
+                            alert("添加失败！")
+                        }
+                    }
+                }
+            )
+        })
+    </script>
+{% endblock %}

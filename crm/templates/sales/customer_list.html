@@ -32,11 +32,10 @@
                         <button class="btn btn-outline-secondary" type="submit" id="button-addon1">搜索</button>
                     </div>
                 </div>
-
             </form>
         </div>
 
-        <form action="{% url 'app01:customer' %}" method="post">
+        <form method="post">
             {% csrf_token %}
             <div class="input-group mb-3 col-md-4 float-left">
                 <div class="input-group-prepend">
@@ -49,7 +48,7 @@
                     </select>
                 </div>
                 <div class="input-group-prepend">
-                    <button class="btn btn-outline-secondary" type="submit" id="button-addon1">批量操作</button>
+                    <button class="btn btn-outline-secondary go" type="button" id="button-addon1">批量操作</button>
                 </div>
             </div>
 
@@ -80,7 +79,6 @@
                         <td>
                             <input type="checkbox" name="cids" value="{{ customer.id }}">
                         </td>
-{#                        <td>{{ request|list_number:forloop.counter}}</td>#}
                         <td>{% list_number request forloop.counter obj %}</td>
                         <td>{{ customer.qq }}</td>
                         <td>{{ customer.name }}</td>
@@ -117,8 +115,33 @@
             } else {
                 $('[name="cids"]').prop("checked", false)
             }
+        });
 
-        })
+        $('.go').click(function () {
+            var bluk_action = $('[name="bluk_action"]').val();
+            var cids = $('[type="checkbox"]:checked');
+            var cid_list = [];
+            for (var i=0;i<cids.length;i++){
+                var cid = cids.eq(i).val();
+                cid_list.push(cid);
+            }
+            console.log(cid_list);
+            $.ajax({
+                url: '',
+                type: 'post',
+                data: {bluk_action: bluk_action, cids: JSON.stringify(cid_list), csrfmiddlewaretoken: '{{ csrf_token }}'},
+                success: function (res) {
+                    console.log(res);
+                    if (res.status === 1){
+                        alert("操作成功！");
+                        location.reload()
+                    }
+                    else{
+                        alert(res.mes);
+                        location.reload()
+                    }
+                }
+            })
+        });
     </script>
-
 {% endblock %}

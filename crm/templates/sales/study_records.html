@@ -1,0 +1,74 @@
+{% extends "page_template.html" %}
+
+{% load mytags %}
+
+{% block title %}
+    学习记录
+{% endblock %}
+
+{% block content %}
+
+    <div class="panel panel-default">
+        <!-- Default panel contents -->
+        <div class="panel-heading"></div>
+        <div class="panel-body">
+            {#            <a href="{% resolve_url request 'app01:course_records_add' %}" class="float-left">#}
+            {#                <button class="btn btn-primary">添加课程信息</button>#}
+            {#            </a>#}
+            {#            <form>#}
+            {#                <div class="input-group mb-3 col-md-4 float-right">#}
+            {#                    <div class="input-group-prepend">#}
+            {#                        <select class="custom-select" id="inputGroupSelect01" name="action">#}
+            {#                            <option value='' selected>关键字</option>#}
+            {#                            <option value="qq__contains">QQ</option>#}
+            {#                            <option value="name__contains">姓名</option>#}
+            {#                        </select>#}
+            {#                    </div>#}
+            {#                    <input type="text" class="form-control" aria-label="Text input with dropdown button"#}
+            {#                           placeholder="请输入搜索内容" name="cd">#}
+            {#                    <div class="input-group-prepend">#}
+            {#                        <button class="btn btn-outline-secondary" type="submit" id="button-addon1">搜索</button>#}
+            {#                    </div>#}
+            {#                </div>#}
+            {#            </form>#}
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            {{ study_records.management_form }}
+            <!-- Table -->
+            <table style="margin-top: 10px" class="table table-striped table-hover">
+                <thead class="thead-dark">
+                <tr style="text-align: center; vertical-align: middle;">
+                    <th>序号</th>
+                    <th>考勤</th>
+                    <th>本节成绩</th>
+                    <th>作业批语</th>
+                    <th>某节课程</th>
+                    <th>学员</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {% for record in study_records %}
+                    <tr style="text-align: center; vertical-align: middle;">
+                        {{ record.id }}
+                        <td>{% list_number request forloop.counter obj %}</td>
+                        <td>{{ record.attendance }}</td>
+                        <td>{{ record.score }}</td>
+                        <td>{{ record.homework_note }}</td>
+                        <td hidden>{{ record.course_record }}</td>
+                        <td>{{ record.instance.course_record }}</td>
+                        <td hidden>{{ record.student }}</td>
+                        <td>{{ record.instance.student }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+
+            <button class="btn btn-success float-left" type="submit">保存</button>
+        </form>
+    </div>
+    {{ page_html }}
+
+{% endblock %}

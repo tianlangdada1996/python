@@ -44,6 +44,7 @@ def resolve_url(request, url, cid=None, data_count=None):
         reverse_url = reverse(url, args=(cid,))
         custom["next"] = request.path + "?" + get_data.urlencode()
     else:
+        # print(">>>",url)
         reverse_url = reverse(url)
         custom["next"] = request.get_full_path()
 

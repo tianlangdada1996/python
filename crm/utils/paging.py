@@ -3,7 +3,7 @@ from django.utils.safestring import mark_safe
 
 class Pagination:
 
-    def __init__(self,current_page_num, customer_num, get_data=None, page_num_show=7, data_show_number=10):
+    def __init__(self, current_page_num, customer_num, get_data=None, page_num_show=7, data_show_number=10):
         self.get_data = get_data
         self.page_num_show = page_num_show
         self.data_show_number = data_show_number
@@ -55,10 +55,10 @@ class Pagination:
         # 计算后的第一页比0还小了，就让第一页等于1，然后显示的最后一页等于显示的页码数+1就好了
         elif self.start_page_num < 1:
             self.start_page_num = 1
-            self .end_page_num = self.page_num_show
+            self.end_page_num = self.page_num_show
 
         # 开头和结尾的数已经算好了，利用range生成一个迭代器，for循环就可以拿到每一页的页码号了
-        self.page_num_range = range(self.start_page_num,self.end_page_num + 1)
+        self.page_num_range = range(self.start_page_num, self.end_page_num + 1)
 
     # 显示数据的开头，比如说每页显示10条数据，第1页是0-9条，第2页数据的开头应该是第10条
     @property

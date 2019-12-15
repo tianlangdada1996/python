@@ -1,9 +1,14 @@
+import json
+
 from django.shortcuts import render, redirect, HttpResponse
+from django.http.response import JsonResponse
 from django.views import View
 from django.db.models import Q
 from django.conf import settings
 from django.urls import reverse
 from django.db import transaction
+from django.forms import modelformset_factory
+
 from . import models
 from . import crmforms
 from utils import encryption, paging
@@ -61,6 +66,7 @@ def home(request):
 
 
 class Customer(View):
+    res = {"status": None, "mes": None}
 
     def get(self, request):
         # 分页的页码每个都是一个a标签，每个标签的路径拼接上一个?page=，利用get请求获取点击的页码号，后端获取page的值即可实现逻辑处理
@@ -116,10 +122,10 @@ class Customer(View):
         # 对应分页切片模糊搜索出来的数据，使其页码与显示的数据对应上
         customers = customers[page_obj.start_data_num:page_obj.end_data_num]
         return render(request, "sales/customer_list.html",
-                      {"customers": customers, "page_html": page_html, "tag": tag, "obj":models.Customer.objects})
+                      {"customers": customers, "page_html": page_html, "tag": tag, "obj": models.Customer.objects})
 
     def post(self, request):
-        cids = request.POST.getlist("cids")
+        cids = json.loads(request.POST.get("cids"))
         bluk_action = request.POST.get("bluk_action")
 
         if hasattr(self, bluk_action):
@@ -142,13 +148,16 @@ class Customer(View):
                 consultant=models.UserInfo.objects.get(username=request.session.get("username")))
 
         if msg_list:  # 选中的客户中有些客户被人拿走了
-            return HttpResponse(msg)
+            self.res["status"] = 0
+            self.res["mes"] = msg
         else:
-            return redirect("app01:customer")
+            self.res["status"] = 1
+        return JsonResponse(self.res)
 
     def transform_sg(self, request, cids):
         models.Customer.objects.filter(id__in=cids).update(consultant=None)
-        return redirect("app01:mycustomer")
+        self.res["status"] = 1
+        return JsonResponse(self.res)
 
 
 class CustomerAddEdit(View):
@@ -200,7 +209,8 @@ class FollowRecord(View):
                                      settings.DATA_SHOW_NUMBER)
         page_html = page_obj.html()
         records = records[page_obj.start_data_num:page_obj.end_data_num]
-        return render(request, "sales/follow_records.html", {"records": records, "page_html": page_html})
+        return render(request, "sales/follow_records.html",
+                      {"records": records, "page_html": page_html, "obj": models.ConsultRecord.objects})
 
     def post(self, request):
         pass
@@ -228,3 +238,154 @@ def followRecordDel(request, cid):
     next_url = request.GET.get("next")
     models.ConsultRecord.objects.filter(id=cid).update(delete_status=True)
     return redirect(next_url)
+
+
+class Enrollment(View):
+
+    def get(self, request):
+        current_page_num = request.GET.get("page")
+        get_data = request.GET.copy()
+        action = request.GET.get("action")
+        cd = request.GET.get("cd")
+        enrollment_data = models.Enrollment.objects.filter(delete_status=False)
+
+        if action and cd:
+            q = Q()
+            q.connector = "and"
+            q.children.append([action, cd])
+            enrollment_data = enrollment_data.filter(q)
+
+        enrollment_num = enrollment_data.count()
+
+        page_obj = paging.Pagination(current_page_num, enrollment_num, get_data, settings.PAGE_NUM_SHOW,
+                                     settings.DATA_SHOW_NUMBER)
+        page_html = page_obj.html()
+        enrollments = enrollment_data[page_obj.start_data_num:page_obj.end_data_num]
+        return render(request, "sales/enrollment_list.html", {"enrollments": enrollments, "page_html": page_html})
+
+    def post(self, request):
+        pass
+
+
+class EnrollmentAddEdit(View):
+
+    def get(self, request, cid=None):
+        enrollment_obj = models.Enrollment.objects.filter(id=cid).first()
+        enrollment_form_obj = crmforms.EnrollmentForm(request, instance=enrollment_obj)
+        return render(request, "sales/enrollment_addedit.html", {"fields": enrollment_form_obj})
+
+    def post(self, request, cid=None):
+        next_url = request.GET.get("next")
+        enrollment_obj = models.Enrollment.objects.filter(id=cid).first()
+        enrollment_form_obj = crmforms.EnrollmentForm(request, request.POST, instance=enrollment_obj)
+        if enrollment_form_obj.is_valid():
+            enrollment_form_obj.save()
+            return redirect(next_url)
+        else:
+            return render(request, "sales/enrollment_addedit.html", {"fields": enrollment_form_obj})
+
+
+def enrollmentDel(request, cid):
+    pass
+
+
+class CourseRecord(View):
+
+    def get(self, request):
+        current_page_num = request.GET.get("page")
+        get_data = request.GET.copy()
+        action = request.GET.get("action")
+        condition = request.GET.get("cd")
+        records = models.CourseRecord.objects.all()
+        if action and condition:
+            q = Q()
+            q.connector = "or"
+            q.children.append([action, condition])
+            records = records.filter(q)
+        record_num = records.count()
+
+        page_obj = paging.Pagination(current_page_num, record_num, get_data, settings.PAGE_NUM_SHOW,
+                                     settings.DATA_SHOW_NUMBER)
+        page_html = page_obj.html()
+        records = records[page_obj.start_data_num:page_obj.end_data_num]
+        return render(request, "sales/course_records.html",
+                      {"course_records": records, "page_html": page_html, "obj": models.CourseRecord.objects})
+
+    def post(self, request):
+        bluk_action = request.POST.get("bluk_action")
+        cids = json.loads(request.POST.get("cid_list"))
+        if hasattr(self, bluk_action):
+            ret = getattr(self, bluk_action)(request, cids)
+            return ret
+        else:
+            return redirect(request.path)
+
+    def bluk_create_records(self, request, cids):
+        # print(cids)
+        try:
+            with transaction.atomic():
+                for cid in cids:
+                    cid = int(cid)
+                    courserecord_obj = models.CourseRecord.objects.filter(id=cid).first()
+                    student_objs = courserecord_obj.re_class.customer_set.filter(status="studying")
+                    studyrecord_list = []
+                    for student_obj in student_objs:
+                        studyrecord_obj = models.StudyRecord(
+                            course_record_id=cid,
+                            student=student_obj
+                        )
+                        studyrecord_list.append(studyrecord_obj)
+                    print(studyrecord_list)
+                    models.StudyRecord.objects.bulk_create(studyrecord_list)
+            status = 1
+        except:
+            status = 0
+        # print(status)
+        return HttpResponse(status)
+
+
+class CourseRecordAddEdit(View):
+
+    def get(self, request, cid=None):
+        courserecord_obj = models.CourseRecord.objects.filter(id=cid).first()
+        courserecord_form_obj = crmforms.CourseRecordForm(instance=courserecord_obj)
+        return render(request, "sales/course_addedit.html", {"fields": courserecord_form_obj, "cid": cid})
+
+    def post(self, request, cid=None):
+        next_url = request.GET.get("next")
+        courserecord_obj = models.CourseRecord.objects.filter(id=cid).first()
+        courserecord_form_obj = crmforms.CourseRecordForm(request.POST, instance=courserecord_obj)
+        if courserecord_form_obj.is_valid():
+            courserecord_form_obj.save()
+            return redirect(next_url)
+        else:
+            return render(request, "sales/course_addedit.html", {"fields": courserecord_form_obj, "cid": cid})
+
+
+def courseRecordDel(request, cid):
+    next_url = request.GET.get("next")
+    models.CourseRecord.objects.filter(id=cid).delete()
+    return redirect(next_url)
+
+
+class StudyRecord(View):
+
+    def get(self, request, cid):
+        studyrecords = modelformset_factory(model=models.StudyRecord,
+                                            form=crmforms.StudyRecordForm,
+                                            extra=0)
+        studyrecords = studyrecords(queryset=models.StudyRecord.objects.filter(course_record_id=cid))
+        return render(request, "sales/study_records.html", {"study_records": studyrecords,
+                                                            "obj": models.StudyRecord.objects})
+
+    def post(self, request, cid):
+        studyrecords = modelformset_factory(model=models.StudyRecord,
+                                            form=crmforms.StudyRecordForm,
+                                            extra=0)
+        studyrecords = studyrecords(request.POST)
+        if studyrecords.is_valid():
+            studyrecords.save()
+            return redirect("app01:course_records")
+        else:
+            return render(request, "sales/study_records.html", {"study_records": studyrecords,
+                                                                "obj": models.StudyRecord.objects})
