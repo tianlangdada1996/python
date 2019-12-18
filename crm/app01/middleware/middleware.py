@@ -11,7 +11,7 @@ class Auth(MiddlewareMixin):
     white_list = [
         reverse("app01:login"),
         reverse("app01:register"),
-        "/admin.*"
+        "^/admin.*"
     ]
 
     def process_request(self, request):
@@ -23,3 +23,5 @@ class Auth(MiddlewareMixin):
             ret = models.UserInfo.objects.filter(username=user)
             if not ret:
                 return redirect('app01:login')
+            else:
+                request.session.get
