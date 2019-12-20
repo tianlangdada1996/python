@@ -13,22 +13,34 @@ class Auth(MiddlewareMixin):
             '^/admin.*$'
         ]
 
+        bread_crumb = [
+            {'title': '首页', 'url': 'javascript:void(0);'},
+        ]
+
         current_path = request.path
         for path in white_list:
             if re.match(path, current_path):
                 break
         else:
             if request.session.get("username"):
-                permission_list = request.session.get("permission_list")
-                for permission in permission_list:
+                permission_dict = request.session.get("permission_dict")
+                for permission in permission_dict.values():
                     path = '^%s$' % permission['url']
                     if re.match(path, current_path):
                         pid = permission["parent_id"]
                         if pid:
+                            bread_crumb.append({"title": permission_dict[str(pid)]["title"],
+                                                "url": permission_dict[str(pid)]["url"]})
+                            bread_crumb.append({"title": permission['title'],
+                                                "url": permission["url"]})
                             request.pid = pid
                         else:
+                            bread_crumb.append({"title":permission['title'],
+                                                "url":permission["url"]})
                             request.pid = permission["id"]
                         # print(request.pid)
+                        request.session["bread_crumb"] = bread_crumb
+
                         break
                 else:
                     return HttpResponse("您没有权限访问！")

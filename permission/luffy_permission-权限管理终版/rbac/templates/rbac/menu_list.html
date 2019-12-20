@@ -1,0 +1,106 @@
+{% extends 'layout.html' %}
+
+
+
+{% block content %}
+<div class="row">
+
+    <div class="col-md-3">
+        <div class="panel panel-default">
+          <div class="panel-heading"> <i class="fa fa-book"></i>菜单管理 <a style="padding: 2px 2px" href="{% url 'rbac:menu_add' %}" class="btn btn-success btn-sm pull-right"><i class="fa fa-plus"></i> 新建</a></div>
+          <div class="panel-body">
+            <table class="table table-bordered table-hover table-striped menu-body">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>图标</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for menu in menu_lists %}
+                <tr class="{% if mid == menu.id|safe %}active{% endif %}">
+                    <td><a href="?mid={{ menu.id }}">{{ menu.title }}</a></td>
+                    <td><i class="fa {{ menu.icon }}"></i></td>
+                    <td>
+                        <a href="{% url 'rbac:menu_edit' menu.id %}"><i class="fa fa-edit"></i></a>
+                        <a href=""><i class="fa fa-remove"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+
+
+            </table>
+
+          </div>
+        </div>
+
+    </div>
+
+    <div class="col-md-9">
+        <div class="panel panel-default">
+          <div class="panel-heading"> <i class="fa fa-cubes"></i>权限管理
+              <a style="padding: 2px 2px" class="btn btn-primary btn-sm pull-right"><i class="fa fa-scissors"></i> 批量操作</a>
+              <a style="padding: 2px 2px" class="btn btn-success btn-sm pull-right"><i class="fa fa-plus"></i> 新建</a>
+
+          </div>
+          <div class="panel-body">
+            <table class="table table-bordered table-hover permission-area2">
+                <thead>
+                <tr>
+                    <th>名称</th>
+                    <th>URL</th>
+                    <th>URL别名</th>
+                    <th>菜单</th>
+                    <th>所属菜单</th>
+                    <th>操作</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for permissions in permissions_list %}
+                <tr class="{% if permissions.menu_id %}parent{% endif %}">
+                    <td>
+                        {% if permissions.menu_id %}<i class="fa fa-caret-down xx"></i>{% endif %}
+                        {{ permissions.title }}</td>
+                    <td>{{ permissions.url }}</td>
+                    <td>{{ permissions.url_name }}</td>
+                    <td>
+                        {% if permissions.menu_id %}
+                        是
+                        {% endif %}
+                    </td>
+
+                    <td>{{ permissions.menu.title }}</td>
+
+                    <td>
+                        <a href=""><i class="fa fa-edit"></i></a>
+                        <a href=""><i class="fa fa-remove"></i></a>
+                    </td>
+                </tr>
+                {% endfor %}
+
+                </tbody>
+
+
+            </table>
+
+          </div>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+

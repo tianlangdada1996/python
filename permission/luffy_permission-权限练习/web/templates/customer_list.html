@@ -4,9 +4,11 @@
 
     <div class="luffy-container">
         <div class="btn-group" style="margin: 5px 0">
-            <a class="btn btn-default" href="/customer/add/">
-                <i class="fa fa-plus-square" aria-hidden="true"></i> 添加客户
-            </a>
+            {% if "customer_add" in request.session.url_name %}
+                <a class="btn btn-default" href="/customer/add/">
+                    <i class="fa fa-plus-square" aria-hidden="true"></i> 添加客户
+                </a>
+            {% endif %}
         </div>
         <table class="table table-bordered table-hover">
             <thead>
@@ -16,7 +18,10 @@
                 <th>年龄</th>
                 <th>邮箱</th>
                 <th>公司</th>
+                {% if "customer_edit" in request.session.url_name or "customer_del" in request.session.url_name %}
                 <th>选项</th>
+                {% endif %}
+
             </tr>
             </thead>
             <tbody>
@@ -27,13 +32,21 @@
                     <td>{{ row.age }}</td>
                     <td>{{ row.email }}</td>
                     <td>{{ row.company }}</td>
+                    {% if "customer_edit" in request.session.url_name or "customer_del" in request.session.url_name %}
                     <td>
-                        <a style="color: #333333;" href="/customer/edit/{{ row.id }}/">
-                            <i class="fa fa-edit" aria-hidden="true"></i></a>
-                        |
-                        <a style="color: #d9534f;" href="/customer/del/{{ row.id }}/"><i class="fa fa-trash-o"></i></a>
-                    </td>
+                        {% if "customer_edit" in request.session.url_name %}
+                            <a style="color: #333333;" href="/customer/edit/{{ row.id }}/">
+                                <i class="fa fa-edit" aria-hidden="true"></i>
+                            </a>
+                        {% endif %}
 
+                        {% if "customer_del" in request.session.url_name %}
+                            <a style="color: #d9534f;" href="/customer/del/{{ row.id }}/">
+                                <i class="fa fa-trash-o"></i>
+                            </a>
+                        {% endif %}
+                    </td>
+                    {% endif %}
                 </tr>
             {% endfor %}
             </tbody>
